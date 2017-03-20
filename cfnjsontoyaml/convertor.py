@@ -19,7 +19,7 @@ class ConvertToMediary(TypeChecker):
             value_type = type(value)
             if value_type == dict:
                 parsed_list.append(self.walk_dictionary(value))
-            elif value_type == str:
+            elif value_type in [str, unicode]:
                 parsed_list.append(value)
             elif value_type == list:
                 parsed_list.append(self.walk_list(value))
@@ -41,13 +41,13 @@ class ConvertToMediary(TypeChecker):
                 else:
                     parsed_value = value
                 parsed_dictionary[key] = self.walk_dictionary(value, use_literal=(key == 'Fn::Base64'))
-            elif value_type == str:
+            elif value_type in [str, unicode]:
                 if key in self.FUNCTIONS:
                     if key == 'Fn::Join':
                         parsed_value = SubBuilder(*parsed_value).build()
                     else:
                         parsed_value = value
-                    return self._mapping[key](parsed_value)
+                    return self._mapping[str(key)](parsed_value)
                 else:
                     parsed_dictionary[key] = value
             elif value_type == list:

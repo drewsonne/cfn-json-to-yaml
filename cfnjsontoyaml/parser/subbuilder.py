@@ -50,7 +50,7 @@ class SubBuilder(object):
         value_type = self._get_value_type(value)
         random_key = ''.join(random.choice('abcdef' + string.digits) for _ in range(8))
 
-        if value_type == 'str':
+        if value_type in ['str', 'unicode']:
             return value, None
         elif value_type == 'Ref':
             return '${' + value['Ref'] + '}', None
@@ -92,8 +92,11 @@ class SubBuilder(object):
 
     def _get_value_type(self, value):
         _type = type(value).__name__
-        if _type in ['str']:
+        if _type in ['str', 'unicode']:
             return type(value).__name__
         if (_type == 'dict') and (len(value.keys()) == 1) and (value.keys()[0] in self.FUNCTIONS):
             return value.keys()[0]
-        return value.yaml_tag
+        try:
+            return value.yaml_tag
+        except AttributeError as error:
+            raise AttributeError("Could not find 'yaml_tag' on {0}:{1}".format(value, type(value).__name__))

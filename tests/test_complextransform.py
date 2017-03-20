@@ -39,26 +39,6 @@ class TestComplextransform(TestCase):
             yaml.dump(mediary)
         )
 
-        # 'SelectMapping': {
-        #     "Fn::Join": [
-        #         "", [
-        #             {
-        #                 "Fn::Select": [
-        #                     "eu-west-1a",
-        #                     {
-        #                         "Fn::GetAZs": "eu-west-1"
-        #                     }
-        #                 ]
-        #             },
-        #             "Testing",
-        #             {
-        #                 "Ref": "MyVar"
-        #             }
-        #         ]
-        #     ]
-        #
-        # }
-
     def test_complextransform_userdata(self):
         mediary = ConvertToMediary({
             'Resources': {
