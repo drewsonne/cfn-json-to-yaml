@@ -1,5 +1,7 @@
+import textwrap
 from unittest import TestCase
 
+import re
 import yaml
 
 from cfnjsontoyaml.convertor import ConvertToMediary
@@ -39,7 +41,9 @@ class TestTransform(TestCase):
             ]]
         }).convert()
 
-        self.assertEqual(
-            ("!Sub [\':\', [NameSpace, !Ref \"MyVariable\", !FindInMap [one, two, three]]]\n"),
-            yaml.dump(mediary)
-        )
+        matching_pattern = re.escape(textwrap.dedent("""        !Sub
+        - NameSpace:${MyVariable}:${findinmap_SUBSTITUTIONPLACEHOLDER}
+        - findinmap_SUBSTITUTIONPLACEHOLDER: !FindInMap [one, two, three]
+        """)).replace("SUBSTITUTIONPLACEHOLDER", "[\d\w]{8}")
+
+        self.assertRegexpMatches(yaml.dump(mediary), matching_pattern)

@@ -18,9 +18,13 @@ class Sub(yaml.YAMLObject):
     def __repr__(self):
         return '{tag}({value})'.format(tag=self.__class__.__name__, value=self.value)
 
+    @property
+    def is_sequence(self):
+        return type(self.value) in [list, tuple]
+
     @staticmethod
     def representer(dumper, data):
-        if type(data.value) in [list, tuple]:
+        if data.is_sequence:
 
             use_literal = "\n" in data.value[0]
             if use_literal:

@@ -4,7 +4,6 @@ import string
 
 import re
 
-
 class SubBuilder(object):
     FUNCTIONS = [
         'Ref',
@@ -63,6 +62,9 @@ class SubBuilder(object):
         elif value_type in ['!Ref','!GetAtt']:
             return '${' + value.value + '}', None
         elif value_type.startswith('!'):
+            if value_type == '!Sub':
+                if not value.is_sequence:
+                    return value.value, None
             sub_key = re.sub(r'[^a-z]+', '', value.yaml_tag.lower()) + '_' + random_key
             sub_key = sub_key.encode('ascii', 'ignore')
             return '${' + sub_key + '}', (sub_key, value)
