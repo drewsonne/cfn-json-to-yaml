@@ -1,8 +1,10 @@
-|Build Status|
+|PyPI version|
 
 |Code Issues|
 
 |codecov|
+
+|Build Status|
 
 cfnjsontoyaml
 =============
@@ -32,9 +34,11 @@ If you come across a template which does not render correctly, please
 try and isolate the fragment of json which is causing issues, and create
 an issue.
 
-.. |Build Status| image:: https://travis-ci.org/drewsonne/cfn-json-to-yaml.svg?branch=master
-   :target: https://travis-ci.org/drewsonne/cfn-json-to-yaml
+.. |PyPI version| image:: https://badge.fury.io/py/cfnjsontoyaml.svg
+   :target: https://badge.fury.io/py/cfnjsontoyaml
 .. |Code Issues| image:: https://www.quantifiedcode.com/api/v1/project/b6d9757c91b64831ba12fd7cf53332de/badge.svg
    :target: https://www.quantifiedcode.com/app/project/b6d9757c91b64831ba12fd7cf53332de
 .. |codecov| image:: https://codecov.io/gh/drewsonne/cfn-json-to-yaml/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/drewsonne/cfn-json-to-yaml
+.. |Build Status| image:: https://travis-ci.org/drewsonne/cfn-json-to-yaml.svg?branch=master
+   :target: https://travis-ci.org/drewsonne/cfn-json-to-yaml
