@@ -1,0 +1,1 @@
+class RefParser(object): pass
