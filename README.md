@@ -4,6 +4,8 @@
 
 [![codecov](https://codecov.io/gh/drewsonne/cfn-json-to-yaml/branch/master/graph/badge.svg)](https://codecov.io/gh/drewsonne/cfn-json-to-yaml)
 
+[![PyPI version](https://badge.fury.io/py/cfnjsontoyaml.svg)](https://badge.fury.io/py/cfnjsontoyaml)
+
 # cfnjsontoyaml
 Convert JSON CloudFormation templates to YAML.
 
