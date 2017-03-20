@@ -1,10 +1,13 @@
-from distutils.core import setup
+from setuptools import setup
+
+__version__ = '1.0'
 
 setup(
-    name='cfn-json-to-yaml',
-    version='1.0',
+    name='cfnjsontoyaml',
+    version=__version__,
     packages=['cfnjsontoyaml'],
-    url='',
+    url='https://github.com/drewsonne/cfn-json-to-yaml',
+    download_url='https://github.com/drewsonne/cfn-json-to-yaml/archive/master.zip',  # I'll explain this in a second
     license='LGPL',
     author='Drew J. Sonne',
     author_email='drew.sonne@gmail.com',

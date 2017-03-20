@@ -4,7 +4,7 @@
 
 [![codecov](https://codecov.io/gh/drewsonne/cfn-json-to-yaml/branch/master/graph/badge.svg)](https://codecov.io/gh/drewsonne/cfn-json-to-yaml)
 
-# cfn-json-to-yaml
+# cfnjsontoyaml
 Convert JSON CloudFormation templates to YAML.
 
 This would automatically convert `Fn::Join` functions to `!Sub`, and
@@ -14,6 +14,9 @@ do its best to take advantage of the new tags.
 `cfn-json-to-yaml` reads either from standard in, or takes the first
 argument as the template to ingest and prints the yaml converted
 template to stdout.
+
+    $ pip install cfnjsontoyaml
+    $ cat my_template.json | cfn-json-to-yaml
 
 ## Problems
 There are a wide range of combinations for functions in cloudformation.
