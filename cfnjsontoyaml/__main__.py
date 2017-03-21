@@ -4,6 +4,16 @@ from cfnjsontoyaml.convertor import ConvertToMediary
 from cfnjsontoyaml.yamlobject.unicode import CleanDumper
 
 
+def print_to_string(document):
+    return yaml.dump(
+        document,
+        Dumper=CleanDumper,
+        encoding='utf-8',
+        allow_unicode=True,
+        explicit_start=True
+    )
+
+
 def convert(args=sys.argv[1:]):
     if args:
         with open(args[0]) as fp:
@@ -17,8 +27,7 @@ def convert(args=sys.argv[1:]):
 
     document = json.loads(json_document)
 
-    print yaml.dump(ConvertToMediary(document).convert(), Dumper=CleanDumper, encoding='utf-8', allow_unicode=True,
-                         explicit_start=True)
+    print print_to_string(ConvertToMediary(document).convert())
 
 
 if __name__ == '__main__':

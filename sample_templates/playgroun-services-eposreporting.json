@@ -1,0 +1,781 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+
+    "Description" : "Bookatable - EPOS Reporting - infrastructure stack - v1.0.4",
+
+    "Parameters" : {
+        "Environment": {
+            "Type": "String",
+            "Description": "Specify Environment: prod | uat | qa | dev | shared | mtp | playground",
+            "AllowedValues": ["prod", "beta", "uat", "qa", "dev", "shared", "mtp", "playground"],
+            "Default": "playground"
+        },
+        "Service": {
+          "Type": "String",
+            "Description": "Name of the the logical grouping that this function/component is part of",
+            "Default": "services"
+        },
+        "Function": {
+            "Type": "String",
+            "AllowedValues": ["eposreporting","eposreporting-beta"],
+            "Description": "Name of the function/component",
+            "Default": "eposreporting"
+        },
+
+        "BuildNumber": {
+      "Type": "String",
+            "Description": "The build number to deploy.",
+      "Default": "0.0.1"
+    },
+
+        "BasePath": {
+          "Type": "String",
+          "Description": "The base path of the API in the URL after the domain name.",
+                "Default": "eposreporting"
+        },
+
+        "StageLoggingLevel": {
+      "Type": "String",
+      "Description": "The logging level defined for the Api Gateway stage.",
+            "Default": "INFO",
+            "AllowedValues": ["OFF", "INFO", "ERROR"]
+    },
+
+        "StageDataTraceEnabled": {
+      "Type": "String",
+      "Description": "Data trace enabled for the Api Gateway stage.",
+            "Default": "True",
+            "AllowedValues": ["True", "False"]
+    },
+
+        "StageMetricsEnabled": {
+      "Type": "String",
+      "Description": "Metrics enabled for the Api Gateway stage.",
+            "Default": "True",
+            "AllowedValues": ["True", "False"]
+    },
+
+        "ApiGatewayThrottlingRate": {
+            "Type": "Number",
+            "Description": "Api Gateway throttling rate",
+            "Default": 30,
+            "MinValue": 5,
+            "MaxValue": 1000
+        },
+
+        "ApiGatewayThrottlingBurst": {
+            "Type": "Number",
+            "Description": "Api Gateway throttling burst",
+            "Default": 60,
+            "MinValue": 5,
+            "MaxValue": 2000
+        },
+
+        "FunctionGetBillToBookingMapping": {
+            "Type": "String",
+            "MinLength": "3",
+            "MaxLength": "255",
+            "Description": "Name of the function used for getting bill to booking mappings",
+            "Default": "getbilltobookingmapping"
+        },
+
+        "HandlerGetBillToBookingMapping": {
+            "Type": "String",
+            "Description": "Function handler for GetBillToBookingMapping",
+            "Default": "GetBillToBookingMapping/app.handler"
+        },
+
+        "FunctionGetBillToBookingMappingScheduled": {
+            "Type": "String",
+            "MinLength": "3",
+            "MaxLength": "255",
+            "Description": "Name of the function used for scheduled (daily) bill to booking mapping report creation",
+            "Default": "billtobookingmappingscheduled"
+        },
+
+        "HandlerGetBillToBookingMappingScheduled": {
+            "Type": "String",
+            "Description": "Function handler for GetBillToBookingMappingScheduled",
+            "Default": "GetBillToBookingMappingScheduled/app.handler"
+        },
+
+        "ScheduleExpressionForGetBillToBookingMapping": {
+            "Type": "String",
+            "Description": "Schedule Rule Expression for the scheduled (daily) bill to booking mapping report creation",
+            "AllowedValues": ["cron(0 1 * * ? *)","cron(0/60 8-16 ? * MON-FRI *)"],
+            "Default": "cron(0 1 * * ? *)"
+        },
+
+        "FunctionManipulateSalesforceIds": {
+            "Type": "String",
+            "MinLength": "3",
+            "MaxLength": "255",
+            "Description": "Name of the function used for setting which SalesForce Ids should be the reports created for",
+            "Default": "manipulatesalesforceids"
+        },
+
+        "HandlerManipulateSalesforceIds": {
+            "Type": "String",
+            "Description": "Function handler for ManipulateSalesforceIds",
+            "Default": "ManipulateSalesforceIds/app.handler"
+        },
+
+        "FunctionGetSalesforceIds": {
+            "Type": "String",
+            "MinLength": "3",
+            "MaxLength": "255",
+            "Description": "Name of the function used for listing those SalesForce Ids that the reports are created for",
+            "Default": "getsalesforceids"
+        },
+
+        "HandlerGetSalesforceIds": {
+            "Type": "String",
+            "Description": "Function handler for GetSalesforceIds",
+            "Default": "GetSalesforceIds/app.handler"
+        },
+
+        "MemorySize": {
+            "Type": "Number",
+            "Description": "The amount of memory, in MB, that is allocated to your Lambda function.",
+            "Default": 128
+        },
+        "TimeoutForGetBillToBookingMapping": {
+            "Type": "Number",
+            "Description": "The function execution time (in seconds) after which Lambda terminates the GetBillToBookingMapping and GetBillToBookingMappingScheduled function.",
+            "Default": 120
+        },
+        "TimeoutForManipulateSalesforceIds": {
+            "Type": "Number",
+            "Description": "The function execution time (in seconds) after which Lambda terminates the ManipulateSalesforceIds function.",
+            "Default": 10
+        },
+        "TimeoutForGetSalesforceIds": {
+            "Type": "Number",
+            "Description": "The function execution time (in seconds) after which Lambda terminates the GetSalesforceIds function.",
+            "Default": 10
+        },
+        "Runtime": {
+            "Type": "String",
+            "Description": "The runtime environment for the Lambda function.",
+            "AllowedValues": ["nodejs", "nodejs4.3", "java8", "python2.7"],
+            "Default": "nodejs4.3"
+        },
+
+        "TraceTimerLogs": {
+            "Type": "String",
+            "Description": "Trace logs for lambdas.",
+            "AllowedValues": ["true", "false"],
+            "Default": "true"
+        },
+
+        "S3BucketName": {
+            "Type": "String",
+            "Description": "The name of the S3 bucket that contains the source code of your Lambda function.",
+            "Default": "bookatable"
+        },
+        "PathToPackageEPOSReporting": {
+            "Type": "String",
+            "Description": "The location and name of the .zip file that contains your source code.",
+            "Default": "deployments/services/eposreporting/lambdas"
+        },
+        "FunctionFileNameEPOSReporting": {
+            "Type": "String",
+            "Description": "Name of the package file uploaded to S3 (without zip extension) with EPOSReporting functions.",
+            "Default": "0.0.1"
+        },
+
+        "LambdaLogGroupRetentionInDays": {
+            "Type": "Number",
+            "Description": "Default retention (in days) for lambda log groups.",
+            "Default": 7,
+            "AllowedValues": [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]
+        },
+
+        "RegistrationTableName": {
+            "Type": "String",
+            "Default": "playground-services-epos-registration"
+        },
+        "RegistrationLocationReferenceUpdatedIndexName": {
+            "Type": "String",
+            "Default": "LocationReference-Updated-index"
+        },
+
+        "TableNameSalesforceId": {
+            "Type": "String",
+            "Default": "salesforceid"
+        },
+        "TableReadCapacitySalesforceId": {
+            "Type": "Number",
+            "Description": "Read Capacity Units for table: salesforceid",
+            "Default": 5,
+            "MinValue": 5,
+            "MaxValue": 1000
+        },
+        "TableWriteCapacitySalesforceId": {
+            "Type": "Number",
+            "Description": "Write Capacity Units for table: salesforceid",
+            "Default": 5,
+            "MinValue": 5,
+            "MaxValue": 1000
+        },
+
+        "S3BucketOfResults": {
+            "Type": "String",
+            "Default": "bookatable-epos"
+        },
+
+        "IAMPolicyName": {
+            "Type": "String",
+            "Description": "The postfix of the generic lambda policy for its role to be used for function execution.",
+            "Default": "lambda-policy"
+        },
+        "IAMRoleName": {
+            "Type": "String",
+            "Description": "The postfix of the role to be used for lambda function execution.",
+            "Default": "lambda-role"
+        }
+
+    },
+
+    "Mappings": {
+        "ApiGatewayDomainName": {
+            "playground": { "DomainName": "playground-gw.bookatable.com" },
+            "dev": { "DomainName": "dev-gw.bookatable.com" },
+            "qa": { "DomainName": "qa-gw.bookatable.com" },
+            "uat": { "DomainName": "uat-gw.bookatable.com" },
+            "beta": { "DomainName": "gw.bookatable.com" },
+            "prod": { "DomainName": "gw.bookatable.com" }
+        }
+    },
+
+    "Resources" : {
+
+        "TableSalesforceId": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties" : {
+                "TableName": { "Fn::Join": ["-", [{ "Ref": "Environment" }, { "Ref": "Service" }, { "Ref": "Function" }, { "Ref": "TableNameSalesforceId" } ]] },
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": { "Ref" : "TableReadCapacitySalesforceId" },
+                    "WriteCapacityUnits": { "Ref" : "TableWriteCapacitySalesforceId" }
+                },
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "SalesForceId",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "SalesForceId",
+                        "KeyType": "HASH"
+                    }
+                ]
+            }
+        },
+
+        "IAMRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": {"Fn::Join" : [ "-", [ {"Ref": "Environment"}, {"Ref": "Service"}, { "Ref": "Function" }, {"Ref": "IAMRoleName"} ] ]},
+                "Path": "/",
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [ "lambda.amazonaws.com" ]
+                            },
+                            "Action": [ "sts:AssumeRole" ]
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": {"Fn::Join" : [ "-", [ {"Ref": "Environment"}, {"Ref": "Service"}, { "Ref": "Function" }, {"Ref": "IAMPolicyName"} ] ]},
+                        "PolicyDocument": {
+                            "Version" : "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Action": [
+                                        "dynamodb:Query"
+                                    ],
+                                    "Resource": {"Fn::Join": ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/", {"Ref": "RegistrationTableName"}, "/index/", {"Ref": "RegistrationLocationReferenceUpdatedIndexName"}]]},
+                                    "Effect": "Allow"
+                                },
+                                {
+                                    "Action": [
+                                        "dynamodb:BatchWriteItem",
+                                        "dynamodb:Scan"
+                                    ],
+                                    "Resource": {"Fn::Join": ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/", { "Ref": "Environment" }, "-", { "Ref": "Service" }, "-", { "Ref": "Function" }, "-", { "Ref": "TableNameSalesforceId" } ]]},
+                                    "Effect": "Allow"
+                                },
+                                {
+                                    "Action": [
+                                        "logs:PutLogEvents",
+                                        "logs:CreateLogStream",
+                                        "logs:DescribeLogStreams"
+                                    ],
+                                    "Resource": {"Fn::Join": ["", ["arn:aws:logs:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":log-group:/aws/lambda/", { "Ref": "Environment" }, "-", { "Ref": "Service" }, "-", { "Ref": "Function" }, "*" ]]},
+
+                                    "Effect": "Allow"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:PutObject"
+                                    ],
+                                    "Resource": {"Fn::Join": ["", ["arn:aws:s3:::", {"Ref": "S3BucketOfResults"}, "/*"]]}
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+
+        "LambdaFunctionGetBillToBookingMapping": {
+            "Type": "AWS::Lambda::Function",
+            "DependsOn": ["IAMRole"],
+            "Properties": {
+                "Handler": { "Ref": "HandlerGetBillToBookingMapping" },
+                "Role": { "Fn::GetAtt": ["IAMRole", "Arn"] },
+                "Description": "This function is used for getting bill to booking mappings",
+                "Runtime": { "Ref": "Runtime" },
+                "Timeout": { "Ref": "TimeoutForGetBillToBookingMapping" },
+                "MemorySize": { "Ref": "MemorySize" },
+                "Code": {
+                    "S3Bucket": { "Ref": "S3BucketName" },
+                    "S3Key": { "Fn::Join" : [ "", [ { "Ref": "PathToPackageEPOSReporting" }, "/", { "Ref": "FunctionFileNameEPOSReporting"}, ".zip" ] ] }
+                },
+                "FunctionName": {"Fn::Join" : [ "-", [ { "Ref" : "Environment" }, { "Ref" : "Service" }, { "Ref": "Function" }, { "Ref" : "FunctionGetBillToBookingMapping" } ] ]}
+            }
+        },
+
+        "LambdaFunctionGetBillToBookingMappingScheduled": {
+            "Type": "AWS::Lambda::Function",
+            "DependsOn": ["IAMRole"],
+            "Properties": {
+                "Handler": { "Ref": "HandlerGetBillToBookingMappingScheduled" },
+                "Role": { "Fn::GetAtt": ["IAMRole", "Arn"] },
+                "Description": "This function is used for scheduled (daily) bill to booking mapping report creation",
+                "Runtime": { "Ref": "Runtime" },
+                "Timeout": { "Ref": "TimeoutForGetBillToBookingMapping" },
+                "MemorySize": { "Ref": "MemorySize" },
+                "Code": {
+                    "S3Bucket": { "Ref": "S3BucketName" },
+                    "S3Key": { "Fn::Join" : [ "", [ { "Ref": "PathToPackageEPOSReporting" }, "/", { "Ref": "FunctionFileNameEPOSReporting"}, ".zip" ] ] }
+                },
+                "FunctionName": {"Fn::Join" : [ "-", [ { "Ref" : "Environment" }, { "Ref" : "Service" }, { "Ref": "Function" }, { "Ref" : "FunctionGetBillToBookingMappingScheduled" } ] ]}
+            }
+        },
+
+        "LambdaFunctionManipulateSalesforceIds": {
+            "Type": "AWS::Lambda::Function",
+            "DependsOn": ["IAMRole"],
+            "Properties": {
+                "Handler": { "Ref": "HandlerManipulateSalesforceIds" },
+                "Role": { "Fn::GetAtt": ["IAMRole", "Arn"] },
+                "Description": "This function is used for setting which SalesForce Ids should be the reports created for",
+                "Runtime": { "Ref": "Runtime" },
+                "Timeout": { "Ref": "TimeoutForManipulateSalesforceIds" },
+                "MemorySize": { "Ref": "MemorySize" },
+                "Code": {
+                    "S3Bucket": { "Ref": "S3BucketName" },
+                    "S3Key": { "Fn::Join" : [ "", [ { "Ref": "PathToPackageEPOSReporting" }, "/", { "Ref": "FunctionFileNameEPOSReporting"}, ".zip" ] ] }
+                },
+                "FunctionName": {"Fn::Join" : [ "-", [ { "Ref" : "Environment" }, { "Ref" : "Service" }, { "Ref": "Function" }, { "Ref" : "FunctionManipulateSalesforceIds" } ] ]}
+            }
+        },
+
+        "LambdaFunctionGetSalesforceIds": {
+            "Type": "AWS::Lambda::Function",
+            "DependsOn": ["IAMRole"],
+            "Properties": {
+                "Handler": { "Ref": "HandlerGetSalesforceIds" },
+                "Role": { "Fn::GetAtt": ["IAMRole", "Arn"] },
+                "Description": "This function is used for setting which SalesForce Ids should be the reports created for",
+                "Runtime": { "Ref": "Runtime" },
+                "Timeout": { "Ref": "TimeoutForGetSalesforceIds" },
+                "MemorySize": { "Ref": "MemorySize" },
+                "Code": {
+                    "S3Bucket": { "Ref": "S3BucketName" },
+                    "S3Key": { "Fn::Join" : [ "", [ { "Ref": "PathToPackageEPOSReporting" }, "/", { "Ref": "FunctionFileNameEPOSReporting"}, ".zip" ] ] }
+                },
+                "FunctionName": {"Fn::Join" : [ "-", [ { "Ref" : "Environment" }, { "Ref" : "Service" }, { "Ref": "Function" }, { "Ref" : "FunctionGetSalesforceIds" } ] ]}
+            }
+        },
+
+        "LogGroupLambdaFunctionGetBillToBookingMapping": {
+            "Type": "AWS::Logs::LogGroup",
+            "DependsOn": "LambdaFunctionGetBillToBookingMapping",
+            "Properties": {
+                "LogGroupName": { "Fn::Join" : [ "", [ "/aws/lambda/", { "Ref": "LambdaFunctionGetBillToBookingMapping"} ] ] },
+                "RetentionInDays": { "Ref" : "LambdaLogGroupRetentionInDays"}
+            }
+        },
+
+        "LogGroupLambdaFunctionGetBillToBookingMappingScheduled": {
+            "Type": "AWS::Logs::LogGroup",
+            "DependsOn": "LambdaFunctionGetBillToBookingMappingScheduled",
+            "Properties": {
+                "LogGroupName": { "Fn::Join" : [ "", [ "/aws/lambda/", { "Ref": "LambdaFunctionGetBillToBookingMappingScheduled"} ] ] },
+                "RetentionInDays": { "Ref" : "LambdaLogGroupRetentionInDays"}
+            }
+        },
+
+        "LogGroupLambdaFunctionManipulateSalesforceIds": {
+            "Type": "AWS::Logs::LogGroup",
+            "DependsOn": "LambdaFunctionManipulateSalesforceIds",
+            "Properties": {
+                "LogGroupName": { "Fn::Join" : [ "", [ "/aws/lambda/", { "Ref": "LambdaFunctionManipulateSalesforceIds"} ] ] },
+                "RetentionInDays": { "Ref" : "LambdaLogGroupRetentionInDays"}
+            }
+        },
+
+        "LogGroupLambdaFunctionGetSalesforceIds": {
+            "Type": "AWS::Logs::LogGroup",
+            "DependsOn": "LambdaFunctionGetSalesforceIds",
+            "Properties": {
+                "LogGroupName": { "Fn::Join" : [ "", [ "/aws/lambda/", { "Ref": "LambdaFunctionGetSalesforceIds"} ] ] },
+                "RetentionInDays": { "Ref" : "LambdaLogGroupRetentionInDays"}
+            }
+        },
+
+        "EventScheduled": {
+            "Type": "AWS::Events::Rule",
+            "DependsOn": ["TableSalesforceId"],
+            "Properties": {
+                "Name": { "Fn::Join": ["-", [{ "Ref": "Environment" }, { "Ref": "Service" }, { "Ref": "Function" }, "eventrule-scheduled" ]] },
+                "Description": "This is an event rule for invoking scheduled (daily) bill to booking mapping report creation",
+                "ScheduleExpression": { "Ref" : "ScheduleExpressionForGetBillToBookingMapping"},
+                "State": "ENABLED",
+                "Targets": [
+                    {
+                        "Arn": { "Fn::GetAtt": ["LambdaFunctionGetBillToBookingMappingScheduled", "Arn"] },
+                        "Id": { "Fn::Join": ["-", [{ "Ref": "Environment" }, { "Ref": "Service" }, { "Ref": "Function" }, "eventrule-scheduled-identifier" ]] },
+                        "Input": { "Fn::Join": ["", [ "{ \"RegistrationTableName\": \"", { "Ref": "RegistrationTableName" },
+                            "\", \"RegistrationLocationReferenceUpdatedIndexName\": \"", { "Ref": "RegistrationLocationReferenceUpdatedIndexName" },
+                            "\", \"S3BucketOfResults\": \"", { "Ref": "S3BucketOfResults" },
+                            "\", \"SalesforceIdTableName\":\"", { "Ref": "TableSalesforceId" },
+                            "\", \"TraceTimerLogs\": \"", { "Ref" : "TraceTimerLogs" }, "\" }" ]] }
+                    }
+                ]
+            }
+        },
+
+        "PermissionForEventsToInvokeLambda": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+                "FunctionName": { "Ref": "LambdaFunctionGetBillToBookingMappingScheduled" },
+                "Action": "lambda:InvokeFunction",
+                "Principal": "events.amazonaws.com",
+                "SourceArn": { "Fn::GetAtt": ["EventScheduled", "Arn"] }
+            }
+        },
+
+        "RestApi": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "DependsOn": ["LambdaFunctionGetBillToBookingMapping", "LambdaFunctionManipulateSalesforceIds", "LambdaFunctionGetSalesforceIds"],
+            "Properties": {
+                "Description": "Bookatable EPOS Reporting API Gateway used for basic reporting features about the integration between Bookatable ERBs and Flypay",
+                "FailOnWarnings": true,
+                "Name": {"Fn::Join" : [ "-", [ {"Ref": "Environment"}, {"Ref": "Service"}, {"Ref": "Function"} ] ]}
+            }
+        },
+
+        "GetBillToBookingMappingResource": {
+            "Type": "AWS::ApiGateway::Resource",
+            "DependsOn": "RestApi",
+            "Properties": {
+                "RestApiId": { "Ref": "RestApi" },
+                "ParentId": { "Fn::GetAtt": ["RestApi", "RootResourceId"] },
+                "PathPart": "getbilltobookingmapping"
+            }
+        },
+
+        "ManipulateSalesforceIdsResource": {
+            "Type": "AWS::ApiGateway::Resource",
+            "DependsOn": "RestApi",
+            "Properties": {
+                "RestApiId": { "Ref": "RestApi" },
+                "ParentId": { "Fn::GetAtt": ["RestApi", "RootResourceId"] },
+                "PathPart": "manipulatesalesforceids"
+            }
+        },
+
+        "GetSalesforceIdsResource": {
+            "Type": "AWS::ApiGateway::Resource",
+            "DependsOn": "RestApi",
+            "Properties": {
+                "RestApiId": { "Ref": "RestApi" },
+                "ParentId": { "Fn::GetAtt": ["RestApi", "RootResourceId"] },
+                "PathPart": "getsalesforceids"
+            }
+        },
+
+        "GetBillToBookingMappingMethod": {
+            "Type": "AWS::ApiGateway::Method",
+            "DependsOn": [ "LambdaInvokePermissionGetBillToBookingMapping" ],
+            "Properties": {
+                "RestApiId": { "Ref": "RestApi" },
+                "ResourceId": { "Ref": "GetBillToBookingMappingResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "NONE",
+                "ApiKeyRequired": true,
+                "RequestParameters": {
+                    "method.request.header.x-api-key": true
+                },
+                "Integration": {
+                    "Type": "AWS_PROXY",
+                    "Uri": {"Fn::Join": ["", ["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", {"Fn::GetAtt": ["LambdaFunctionGetBillToBookingMapping", "Arn"] }, "/invocations"]]},
+                    "IntegrationHttpMethod": "POST",
+                    "PassthroughBehavior": "when_no_templates"
+                }
+            }
+        },
+
+        "ManipulateSalesforceIdsMethod": {
+            "Type": "AWS::ApiGateway::Method",
+            "DependsOn": [ "LambdaInvokePermissionManipulateSalesforceIds" ],
+            "Properties": {
+                "RestApiId": { "Ref": "RestApi" },
+                "ResourceId": { "Ref": "ManipulateSalesforceIdsResource" },
+                "HttpMethod": "POST",
+                "AuthorizationType": "NONE",
+                "ApiKeyRequired": true,
+                "RequestParameters": {
+                    "method.request.header.x-api-key": true
+                },
+                "Integration": {
+                    "Type": "AWS_PROXY",
+                    "Uri": {"Fn::Join": ["", ["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", {"Fn::GetAtt": ["LambdaFunctionManipulateSalesforceIds", "Arn"] }, "/invocations"]]},
+                    "IntegrationHttpMethod": "POST",
+                    "PassthroughBehavior": "when_no_templates"
+                }
+            }
+        },
+
+        "GetSalesforceIdsMethod": {
+            "Type": "AWS::ApiGateway::Method",
+            "DependsOn": [ "LambdaInvokePermissionGetSalesforceIds" ],
+            "Properties": {
+                "RestApiId": { "Ref": "RestApi" },
+                "ResourceId": { "Ref": "GetSalesforceIdsResource" },
+                "HttpMethod": "GET",
+                "AuthorizationType": "NONE",
+                "ApiKeyRequired": true,
+                "RequestParameters": {
+                    "method.request.header.x-api-key": true
+                },
+                "Integration": {
+                    "Type": "AWS_PROXY",
+                    "Uri": {"Fn::Join": ["", ["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", {"Fn::GetAtt": ["LambdaFunctionGetSalesforceIds", "Arn"] }, "/invocations"]]},
+                    "IntegrationHttpMethod": "POST",
+                    "PassthroughBehavior": "when_no_templates"
+                }
+            }
+        },
+
+        "LambdaInvokePermissionGetBillToBookingMapping": {
+            "Type": "AWS::Lambda::Permission",
+
+            "Properties": {
+                "FunctionName": {"Fn::GetAtt": ["LambdaFunctionGetBillToBookingMapping", "Arn"] },
+                "Action": "lambda:InvokeFunction",
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":", {"Ref": "RestApi"}, "/*/POST/getbilltobookingmapping"]]}
+            }
+        },
+
+        "LambdaInvokePermissionManipulateSalesforceIds": {
+            "Type": "AWS::Lambda::Permission",
+
+            "Properties": {
+                "FunctionName": {"Fn::GetAtt": ["LambdaFunctionManipulateSalesforceIds", "Arn"] },
+                "Action": "lambda:InvokeFunction",
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":", {"Ref": "RestApi"}, "/*/POST/manipulatesalesforceids"]]}
+            }
+        },
+
+        "LambdaInvokePermissionGetSalesforceIds": {
+            "Type": "AWS::Lambda::Permission",
+
+            "Properties": {
+                "FunctionName": {"Fn::GetAtt": ["LambdaFunctionGetSalesforceIds", "Arn"] },
+                "Action": "lambda:InvokeFunction",
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {"Fn::Join": ["", ["arn:aws:execute-api:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":", {"Ref": "RestApi"}, "/*/GET/getsalesforceids"]]}
+            }
+        },
+
+        "DeployApi": {
+            "Type": "AWS::ApiGateway::Deployment",
+            "DependsOn": ["GetBillToBookingMappingMethod", "ManipulateSalesforceIdsMethod", "GetSalesforceIdsMethod"],
+            "Properties": {
+                "RestApiId": {
+                    "Ref": "RestApi"
+                }
+            }
+        },
+
+        "ApiStage": {
+            "Type": "AWS::ApiGateway::Stage",
+            "DependsOn": ["DeployApi"],
+            "Properties": {
+                "DeploymentId": { "Ref": "DeployApi" },
+                "Description": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "v",
+                            {
+                                "Ref": "BuildNumber"
+                            }
+                        ]
+                    ]
+                },
+                "RestApiId": { "Ref": "RestApi" },
+                "StageName": { "Ref": "Environment" },
+                "MethodSettings" : [
+                    {
+                        "ResourcePath": "/*",
+                        "HttpMethod": "*",
+                        "MetricsEnabled": { "Ref": "StageMetricsEnabled"},
+                        "LoggingLevel": { "Ref": "StageLoggingLevel" },
+                        "DataTraceEnabled": { "Ref": "StageDataTraceEnabled" },
+                        "ThrottlingBurstLimit": { "Ref": "ApiGatewayThrottlingBurst" },
+                        "ThrottlingRateLimit": { "Ref": "ApiGatewayThrottlingRate" }
+                    }
+                ],
+                "Variables": {
+                    "RegistrationTableName": { "Ref": "RegistrationTableName" },
+                    "RegistrationLocationReferenceUpdatedIndexName": { "Ref": "RegistrationLocationReferenceUpdatedIndexName" },
+                    "SalesforceIdTableName": { "Ref": "TableSalesforceId" },
+                    "S3BucketOfResults" : { "Ref": "S3BucketOfResults" },
+                    "TraceTimerLogs": { "Ref" : "TraceTimerLogs" }
+                }
+            }
+        },
+
+        "ApiKey": {
+          "Type": "AWS::ApiGateway::ApiKey",
+          "DependsOn": ["DeployApi", "ApiStage"],
+          "Properties": {
+            "Name": { "Fn::Join": ["-", [{ "Ref": "Environment" }, { "Ref": "Service" }, { "Ref": "Function" }, "ApiKey" ]] },
+            "Description": "EPOS Reporting API Key",
+            "Enabled": "true",
+            "StageKeys": [{
+              "RestApiId": { "Ref": "RestApi" },
+              "StageName": { "Ref": "Environment" }
+            }]
+          }
+        },
+
+        "BasePathMapping": {
+            "Type": "AWS::ApiGateway::BasePathMapping",
+            "DependsOn": "ApiStage",
+            "Properties": {
+                "BasePath": { "Ref": "BasePath" },
+                "DomainName": { "Fn::FindInMap" : [ "ApiGatewayDomainName" , { "Ref" : "Environment" }, "DomainName"] },
+                "RestApiId": { "Ref": "RestApi" },
+                "Stage": { "Ref": "Environment" }
+            }
+        },
+
+        "UsagePlan": {
+            "Type": "AWS::ApiGateway::UsagePlan",
+            "DependsOn": ["ApiStage"],
+            "Properties": {
+                "ApiStages" : [
+                    {
+                        "ApiId": { "Ref": "RestApi" },
+                        "Stage": { "Ref": "ApiStage" }
+                    }
+                ],
+                "Description": "Usage plan for EPOSReporting",
+                "Throttle" : {
+                    "BurstLimit" : {
+                        "Ref": "ApiGatewayThrottlingBurst"
+                    },
+                    "RateLimit" :{
+                        "Ref": "ApiGatewayThrottlingRate"
+                    }
+                },
+                "UsagePlanName" : {"Fn::Join" : [ "-", [ {"Ref": "Environment"}, {"Ref": "Service"}, {"Ref": "Function"} ] ]}
+            }
+        }
+    },
+
+    "Outputs" : {
+        "ApiKey": {
+            "Description": "API Key for EPOS reporting",
+            "Value": {
+                "Ref": "ApiKey"
+            }
+        },
+
+        "ApiId": {
+            "Description": "The id of the Api Gateway.",
+            "Value": {
+                "Ref": "RestApi"
+            }
+        },
+
+        "ApiGatewayDomainGetBillToBookingMapping" : {
+            "Description": "Deployed API Gateway domain for getting bill to booking mappings",
+            "Value": {"Fn::Join" : [ "/", [
+                "https:/",
+                { "Fn::FindInMap" : [ "ApiGatewayDomainName" , { "Ref" : "Environment" }, "DomainName"] },
+                {"Ref": "BasePath"},
+                "getbilltobookingmapping"
+            ] ]}
+        },
+
+        "ApiGatewayDomainManipulateSalesforceIds" : {
+            "Description": "Deployed API Gateway domain for setting which SalesForce Ids should be the reports created for",
+            "Value": {"Fn::Join" : [ "/", [
+                "https:/",
+                { "Fn::FindInMap" : [ "ApiGatewayDomainName" , { "Ref" : "Environment" }, "DomainName"] },
+                {"Ref": "BasePath"},
+                "manipulatesalesforceids"
+            ] ]}
+        },
+
+        "ApiGatewayDomainGetSalesforceIds" : {
+            "Description": "Deployed API Gateway domain for listing those SalesForce Ids that the reports are created for",
+            "Value": {"Fn::Join" : [ "/", [
+                "https:/",
+                { "Fn::FindInMap" : [ "ApiGatewayDomainName" , { "Ref" : "Environment" }, "DomainName"] },
+                {"Ref": "BasePath"},
+                "getsalesforceids"
+            ] ]}
+        },
+
+        "FunctionNameGetBillToBookingMapping": {
+            "Description": "The name of the GetBillToBookingMapping lambda function.",
+            "Value": { "Ref": "LambdaFunctionGetBillToBookingMapping" }
+        },
+
+        "FunctionNameGetBillToBookingMappingScheduled": {
+            "Description": "The name of the GetBillToBookingMappingScheduled lambda function.",
+            "Value": { "Ref": "LambdaFunctionGetBillToBookingMappingScheduled" }
+        },
+
+        "FunctionNameManipulateSalesforceIds": {
+            "Description": "The name of the ManipulateSalesforceIds lambda function.",
+            "Value": { "Ref": "LambdaFunctionManipulateSalesforceIds" }
+        },
+
+        "FunctionNameGetSalesforceIds": {
+            "Description": "The name of the GetSalesforceIds lambda function.",
+            "Value": { "Ref": "LambdaFunctionGetSalesforceIds" }
+        },
+
+        "DynamoSalesforceIdTableName" : {
+            "Description" : "SalesforceId table name",
+            "Value" : { "Ref": "TableSalesforceId" }
+        }
+    }
+}
