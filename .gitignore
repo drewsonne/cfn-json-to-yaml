@@ -207,4 +207,3 @@ $RECYCLE.BIN/
 .direnv
 .envrc
 tests.*
-*.yaml

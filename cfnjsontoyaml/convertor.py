@@ -1,17 +1,46 @@
+from collections import OrderedDict
+
 import yaml
 
 from cfnjsontoyaml.mixins import FUNCTION_MAPPING
 from cfnjsontoyaml.mixins.type_checker import TypeChecker
 from cfnjsontoyaml.parser.subbuilder import SubBuilder
+from cfnjsontoyaml.yamlobject.ordereddict import represent_ordereddict  # not directly used, but don't delete
 
 
 class ConvertToMediary(TypeChecker):
+    ROOT_ORDER = [
+        'AWSTemplateFormatVersion', 'Transform', 'Description', 'Metadata',
+        'Parameters', 'Mappings', 'Conditions', 'Resources', 'Outputs'
+    ]
+    RESOURCE_ORDER = ['Type', 'Properties', 'DependsOn']
+
     def __init__(self, template):
         self._template = template
         self._mapping = FUNCTION_MAPPING
 
-    def convert(self):
-        return self.walk_dictionary(self._template)
+    def convert(self, order_template=False):
+        converted_dict = self.walk_dictionary(self._template)
+        if order_template:
+            converted_dict = self.sort_template(converted_dict)
+        return converted_dict
+
+    def sort_template(self, converted_dict):
+        if 'Resources' in converted_dict.keys():
+            for resource_name, resource in converted_dict['Resources'].items():
+                converted_dict['Resources'][resource_name] = self.set_dict_order(resource, self.RESOURCE_ORDER)
+        return self.set_dict_order(converted_dict, self.ROOT_ORDER)
+
+    def set_dict_order(self, dictionary, order):
+        available_keys = dictionary.keys()
+        ordered_dictionary = OrderedDict()
+        for key in order:
+            if key in available_keys:
+                ordered_dictionary[key] = dictionary[key]
+                available_keys.remove(key)
+        for key in available_keys:
+            ordered_dictionary[key] = dictionary[key]
+        return ordered_dictionary
 
     def walk_list(self, array):
         parsed_list = []
@@ -32,8 +61,8 @@ class ConvertToMediary(TypeChecker):
         for key, value in dictionary.items():
             value_type = type(value)
             if value_type == dict:
-                if key in self.FUNCTIONS:
-                    if key == 'Fn::Join':
+                if str(key) in self.FUNCTIONS:
+                    if str(key) == 'Fn::Join':
                         parsed_value = SubBuilder(*parsed_value).build()
                     else:
                         parsed_value = value
@@ -42,8 +71,8 @@ class ConvertToMediary(TypeChecker):
                     parsed_value = value
                 parsed_dictionary[key] = self.walk_dictionary(value, use_literal=(key == 'Fn::Base64'))
             elif value_type in [str, unicode]:
-                if key in self.FUNCTIONS:
-                    if key == 'Fn::Join':
+                if str(key) in self.FUNCTIONS:
+                    if str(key) == 'Fn::Join':
                         parsed_value = SubBuilder(*parsed_value).build()
                     else:
                         parsed_value = value
@@ -53,7 +82,7 @@ class ConvertToMediary(TypeChecker):
             elif value_type == list:
                 parsed_value = self.walk_list(value)
                 kwargs = {}
-                if key in self.FUNCTIONS:
+                if str(key) in self.FUNCTIONS:
                     if str(key) == 'Fn::Join':
                         key = 'Fn::Sub'
                         parsed_value = SubBuilder(*parsed_value).build()
@@ -61,9 +90,10 @@ class ConvertToMediary(TypeChecker):
                         return self._mapping[str(key)](parsed_value, **kwargs)
                     else:
                         return self._mapping[str(key)](parsed_value)
-
                 else:
-                    parsed_dictionary[key] = value
+                    parsed_dictionary[key] = parsed_value
+            elif value_type in [bool, int]:
+                parsed_dictionary[key] = value
             else:
-                value
+                raise RuntimeError("Unexpected state with value_type: {0}".format(value_type.__name__))
         return parsed_dictionary

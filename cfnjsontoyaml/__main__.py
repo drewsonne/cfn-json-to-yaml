@@ -10,7 +10,8 @@ def print_to_string(document):
         Dumper=CleanDumper,
         encoding='utf-8',
         allow_unicode=True,
-        explicit_start=True
+        explicit_start=True,
+        default_flow_style=False
     )
 
 
@@ -27,7 +28,7 @@ def convert(args=sys.argv[1:]):
 
     document = json.loads(json_document)
 
-    print print_to_string(ConvertToMediary(document).convert())
+    print print_to_string(ConvertToMediary(document).convert(order_template=True))
 
 
 if __name__ == '__main__':
