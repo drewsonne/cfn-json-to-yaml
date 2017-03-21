@@ -12,6 +12,6 @@ class FunctionParser(object):
             'Ref': RefParser
         }[function_name](_node)
 
-    @classmethod
-    def _get_function_key(cls, node):
+    @staticmethod
+    def _get_function_key(node):
         return node.keys()[0]

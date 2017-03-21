@@ -23,7 +23,8 @@ class TypeChecker(object):
             (self._get_function_key(value) in self.FUNCTIONS)
         )
 
-    def _get_function_key(self, value):
+    @staticmethod
+    def _get_function_key(value):
         return value.keys()[0]
 
     def _is_array(self, value):

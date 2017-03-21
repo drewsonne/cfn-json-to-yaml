@@ -31,7 +31,8 @@ class ConvertToMediary(TypeChecker):
                 converted_dict['Resources'][resource_name] = self.set_dict_order(resource, self.RESOURCE_ORDER)
         return self.set_dict_order(converted_dict, self.ROOT_ORDER)
 
-    def set_dict_order(self, dictionary, order):
+    @staticmethod
+    def set_dict_order(dictionary, order):
         available_keys = dictionary.keys()
         ordered_dictionary = OrderedDict()
         for key in order:
