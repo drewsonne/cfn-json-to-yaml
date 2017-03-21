@@ -13,7 +13,7 @@ class TestMain(unittest.TestCase):
             'test': 'hallo'
         })
         self.assertEqual(
-            "--- {test: hallo}\n",
+            "---\ntest: hallo\n",
             result
         )
 
@@ -32,7 +32,7 @@ class TestMain(unittest.TestCase):
 
         convert([])
         self.assertEqual(
-            "--- {test: hallo}\n\n",
+            "---\ntest: hallo\n\n",
             mystdout.getvalue()
         )
 

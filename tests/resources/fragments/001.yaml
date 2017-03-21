@@ -1,0 +1,19 @@
+---
+Resources:
+  MappingReferenceMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: true
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: when_no_templates
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunctionMappingReference.Arn}/invocations"
+      RequestParameters:
+        method.request.header.x-api-key: true
+      ResourceId: !Ref "MappingReferenceResource"
+      RestApiId: !Ref "RestApi"
+    DependsOn:
+    - LambdaInvokePermissionMappingReference

@@ -1,0 +1,39 @@
+---
+Resources:
+  IAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - dynamodb:Query
+            Effect: Allow
+            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${RegistrationTableName}/index/${RegistrationLocationReferenceUpdatedIndexName}"
+          - Action:
+            - dynamodb:BatchWriteItem
+            - dynamodb:Scan
+            Effect: Allow
+            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${Environment}-${Service}-${Function}-${TableNameSalesforceId}"
+          - Action:
+            - logs:PutLogEvents
+            - logs:CreateLogStream
+            - logs:DescribeLogStreams
+            Effect: Allow
+            Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${Environment}-${Service}-${Function}*"
+          - Action:
+            - s3:PutObject
+            Effect: Allow
+            Resource: !Sub "arn:aws:s3:::${S3BucketOfResults}/*"
+          Version: '2012-10-17'
+        PolicyName: !Sub "${Environment}-${Service}-${Function}-${IAMPolicyName}"
+      RoleName: !Sub "${Environment}-${Service}-${Function}-${IAMRoleName}"
