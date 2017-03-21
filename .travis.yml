@@ -4,8 +4,9 @@ python:
   - "3.4"
 before_install:
   - pip install codecov
+  - python setup.py bdist_wheel
 install:
-  - pip install .
+  - pip install dist/cfnjsontoyaml-*
 script: nosetests --with-coverage
 matrix:
   allow_failures:
