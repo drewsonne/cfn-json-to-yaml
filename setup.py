@@ -1,11 +1,11 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 
 setup(
     name='cfnjsontoyaml',
     version=__version__,
-    packages=['cfnjsontoyaml'],
+    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     url='https://github.com/drewsonne/cfn-json-to-yaml',
     download_url='https://github.com/drewsonne/cfn-json-to-yaml/archive/v.{0}.zip'.format(__version__),  # I'll explain this in a second
     license='LGPL',
