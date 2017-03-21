@@ -27,7 +27,7 @@ class Sub(CfnFunction):
 
             use_literal = "\n" in data.value[0]
             if use_literal:
-                pattern = literal(data.value[0])
+                pattern = Literal(data.value[0])
             else:
                 pattern = data.value[0]
 
