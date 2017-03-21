@@ -1,22 +1,21 @@
 import yaml
 
 from cfnjsontoyaml.parser.subbuilder import SubBuilder
+from cfnjsontoyaml.yamlobject.cfnfunction import CfnFunction
 
 
-class Sub(yaml.YAMLObject):
+class Sub(CfnFunction):
     yaml_tag = u'!Sub'
 
     def __init__(self, value, use_literal=False):
         pattern, substitutions = value
         if substitutions is None:
-            self.value = pattern
+            value = pattern
         else:
-            self.value = value
+            value = value
+        super(Sub, self).__init__(value)
 
         self.use_literal = use_literal
-
-    def __repr__(self):
-        return '{tag}({value})'.format(tag=self.__class__.__name__, value=self.value)
 
     @property
     def is_sequence(self):

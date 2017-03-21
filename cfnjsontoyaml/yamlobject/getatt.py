@@ -1,14 +1,13 @@
 import yaml
 
+from cfnjsontoyaml.yamlobject.cfnfunction import CfnFunction
 
-class GetAtt(yaml.YAMLObject):
+
+class GetAtt(CfnFunction):
     yaml_tag = u'!GetAtt'
 
     def __init__(self, attribute):
-        self.value = "{0}.{1}".format(*attribute)
-
-    def __repr__(self):
-        return '{tag}({value})'.format(tag=self.__class__.__name__, value=self.value)
+        super(GetAtt, self).__init__("{0}.{1}".format(*attribute))
 
     @staticmethod
     def representer(dumper, data):

@@ -1,14 +1,10 @@
 import yaml
 
+from cfnjsontoyaml.yamlobject.cfnfunction import CfnFunction
 
-class GetAZs(yaml.YAMLObject):
+
+class GetAZs(CfnFunction):
     yaml_tag = u'!GetAZs'
-
-    def __init__(self, value):
-        self.value = value
-
-    def __repr__(self):
-        return '{tag}({value})'.format(tag=self.__class__.__name__, value=self.value)
 
     @staticmethod
     def representer(dumper, data):

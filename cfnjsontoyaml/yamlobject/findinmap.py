@@ -1,14 +1,10 @@
 import yaml
 
+from cfnjsontoyaml.yamlobject.cfnfunction import CfnFunction
 
-class FindInMap(yaml.YAMLObject):
+
+class FindInMap(CfnFunction):
     yaml_tag = u'!FindInMap'
-
-    def __init__(self, value):
-        self.value = value
-
-    def __repr__(self):
-        return '{tag}({value})'.format(tag=self.__class__.__name__, value=self.value)
 
     @staticmethod
     def representer(dumper, data):

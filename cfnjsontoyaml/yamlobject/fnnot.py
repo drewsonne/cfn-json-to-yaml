@@ -1,14 +1,10 @@
 import yaml
 
+from cfnjsontoyaml.yamlobject.cfnfunction import CfnFunction
 
-class Not(yaml.YAMLObject):
+
+class Not(CfnFunction):
     yaml_tag = u'!Not'
-
-    def __init__(self, value):
-        self.value = value
-
-    def __repr__(self):
-        return '{tag}({value})'.format(tag=self.__class__.__name__, value=self.value)
 
     @staticmethod
     def representer(dumper, data):

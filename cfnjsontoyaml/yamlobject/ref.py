@@ -1,17 +1,13 @@
 import yaml
 
+from cfnjsontoyaml.yamlobject.cfnfunction import CfnFunction
 
-class Ref(yaml.YAMLObject):
+
+class Ref(CfnFunction):
     yaml_tag = u'!Ref'
-
-    def __init__(self, value):
-        self.value = value
 
     def __to_sub_string(self):
         return self.value
-
-    def __repr__(self):
-        return '{tag}({value})'.format(tag=self.__class__.__name__, value=self.value)
 
     @staticmethod
     def representer(dumper, data):
