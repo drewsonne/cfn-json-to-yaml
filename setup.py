@@ -18,7 +18,8 @@ setup(
         ]
     },
     install_requires=[
-        'pyyaml'
+        'pyyaml',
+        'six'
     ],
 
 )
