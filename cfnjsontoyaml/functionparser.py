@@ -13,5 +13,5 @@ class FunctionParser(object):
         }[function_name](_node)
 
     @classmethod
-    def _get_function_key(self, node):
+    def _get_function_key(cls, node):
         return node.keys()[0]

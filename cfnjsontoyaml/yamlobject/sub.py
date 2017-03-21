@@ -43,7 +43,7 @@ class Sub(CfnFunction):
         return Sub(value)
 
 
-class literal(str): pass
+class Literal(str): pass
 
 
 def literal_presenter(dumper, data):
@@ -53,4 +53,4 @@ def literal_presenter(dumper, data):
 if __name__ == 'cfnjsontoyaml.yamlobject.sub':
     yaml.add_representer(Sub, Sub.representer)
     yaml.add_constructor(u'!Ref', Sub.constructor)
-    yaml.add_representer(literal, literal_presenter)
+    yaml.add_representer(Literal, literal_presenter)
