@@ -54,11 +54,16 @@ class ConvertToMediary(TypeChecker):
                 parsed_value = self.walk_list(value)
                 kwargs = {}
                 if key in self.FUNCTIONS:
-                    if key == 'Fn::Join':
+                    if str(key) == 'Fn::Join':
                         key = 'Fn::Sub'
                         parsed_value = SubBuilder(*parsed_value).build()
                         kwargs['use_literal'] = use_literal
-                    return self._mapping[key](parsed_value, **kwargs)
+                        return self._mapping[str(key)](parsed_value, **kwargs)
+                    else:
+                        return self._mapping[str(key)](parsed_value)
+
+                else:
+                    parsed_dictionary[key] = value
             else:
                 value
         return parsed_dictionary

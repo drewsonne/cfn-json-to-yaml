@@ -1,0 +1,48 @@
+{
+  "Resources": {
+    "MappingReferenceMethod": {
+      "Type": "AWS::ApiGateway::Method",
+      "DependsOn": [
+        "LambdaInvokePermissionMappingReference"
+      ],
+      "Properties": {
+        "RestApiId": {
+          "Ref": "RestApi"
+        },
+        "ResourceId": {
+          "Ref": "MappingReferenceResource"
+        },
+        "HttpMethod": "POST",
+        "AuthorizationType": "NONE",
+        "ApiKeyRequired": true,
+        "RequestParameters": {
+          "method.request.header.x-api-key": true
+        },
+        "Integration": {
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "LambdaFunctionMappingReference",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          },
+          "IntegrationHttpMethod": "POST",
+          "PassthroughBehavior": "when_no_templates"
+        }
+      }
+    }
+  }
+}
