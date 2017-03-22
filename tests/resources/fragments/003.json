@@ -1,0 +1,24 @@
+{
+  "Conditions": {
+    "HasSortKey": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "SortKeyElementName"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "HasStreamEnabled": {
+      "Fn::Equals": [
+        {
+          "Ref": "StreamEnabled"
+        },
+        "true"
+      ]
+    }
+  }
+}

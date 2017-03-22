@@ -70,7 +70,7 @@ class ConvertToMediary(TypeChecker):
                     parsed_value = self._mapping[key](parsed_value)
                 else:
                     parsed_value = value
-                parsed_dictionary[key] = self.walk_dictionary(value, use_literal=(key == 'Fn::Base64'))
+                parsed_dictionary[key] = self.walk_dictionary(value, use_literal=(key in self.FUNCTIONS))
             elif value_type in [str, unicode]:
                 if str(key) in self.FUNCTIONS:
                     if str(key) == 'Fn::Join':
@@ -84,13 +84,17 @@ class ConvertToMediary(TypeChecker):
                 parsed_value = self.walk_list(value)
                 kwargs = {}
                 if str(key) in self.FUNCTIONS:
+                    child_is_function = self.check_list_has_functions(parsed_value)
+                    kwargs['use_literal'] = (use_literal | child_is_function)
                     if str(key) == 'Fn::Join':
                         key = 'Fn::Sub'
                         parsed_value = SubBuilder(*parsed_value).build()
-                        kwargs['use_literal'] = use_literal
                         return self._mapping[str(key)](parsed_value, **kwargs)
                     else:
-                        return self._mapping[str(key)](parsed_value)
+                        if kwargs['use_literal']:
+                            parsed_dictionary[key] = parsed_value
+                        else:
+                            return self._mapping[str(key)](parsed_value)
                 else:
                     parsed_dictionary[key] = parsed_value
             elif value_type in [bool, int]:
@@ -98,3 +102,10 @@ class ConvertToMediary(TypeChecker):
             else:
                 raise RuntimeError("Unexpected state with value_type: {0}".format(value_type.__name__))
         return parsed_dictionary
+
+    @staticmethod
+    def check_list_has_functions(haystack_list):
+        has_function = False
+        for item in haystack_list:
+            has_function |= issubclass(type(item), yaml.YAMLObject)
+        return has_function
