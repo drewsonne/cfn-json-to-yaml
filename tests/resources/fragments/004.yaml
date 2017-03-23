@@ -1,0 +1,27 @@
+---
+Resources:
+  SGNAT:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: NAT Instances Security Group
+      SecurityGroupIngress:
+      - CidrIp: !Join
+          - "."
+          - !FindInMap:
+            - EnvNetworkID
+            - !Ref Environment
+            - NetworkID
+          - 0.0/16
+        IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+      - CidrIp: !Join
+          - "."
+          - !FindInMap:
+            - EnvNetworkID
+            - !Ref Environment
+            - NetworkID
+          - 0.0/16
+        IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
