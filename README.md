@@ -8,10 +8,12 @@
 
 
 # cfnjsontoyaml
-Convert JSON CloudFormation templates to YAML.
+Convert JSON CloudFormation templates to the new YAML syntax. This
+includes converting all `Fn::*` and `Ref` JSON functions to `!*` yaml
+node type functions.
 
-This would automatically convert `Fn::Join` functions to `!Sub`, and
-do its best to take advantage of the new tags.
+In addition, cfnjsontoyaml tries to make a best guess at when
+ `Fn::Join` functions should automatically be converted to `!Sub`.
 
 ## Usage
 `cfn-json-to-yaml` reads either from standard in, or takes the first
@@ -25,4 +27,9 @@ template to stdout.
 There are a wide range of combinations for functions in cloudformation.
 If you come across a template which does not render correctly, please
 try and isolate the fragment of json which is causing issues, and
-create an issue.
+create an [issue in github](https://github.com/drewsonne/cfn-json-to-yaml/issues/new) .
+
+If you'd like to be a bit more helpful, you can fork the repository,
+create a branch, and add a json/yaml snippet to https://github.com/drewsonne/cfn-json-to-yaml/tree/master/tests/resources/fragments
+with the next sequential number. The smaller the json/yaml snippet
+you can provide the quicker I can fix it. :-)
