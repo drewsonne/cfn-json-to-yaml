@@ -15,7 +15,7 @@ class Sub(CfnFunction):
             value = value
         super(Sub, self).__init__(value)
 
-        self.use_literal = use_literal
+        self.use_literal = False if (len(value) < 30) else use_literal
 
     @property
     def is_sequence(self):

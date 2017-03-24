@@ -15,6 +15,6 @@ class Or(CfnFunction):
         value = loader.construct_scalar(node)
         return Or(value)
 
-if __name__ == 'cfnjsontoyaml.yamlobject.or':
+if __name__ == 'cfnjsontoyaml.yamlobject.fnor':
     yaml.add_representer(Or, Or.representer)
     yaml.add_constructor(u'!Or', Or.constructor)

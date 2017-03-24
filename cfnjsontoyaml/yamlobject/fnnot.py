@@ -15,6 +15,6 @@ class Not(CfnFunction):
         value = loader.construct_scalar(node)
         return Not(value)
 
-if __name__ == 'cfnjsontoyaml.yamlobject.not':
+if __name__ == 'cfnjsontoyaml.yamlobject.fnnot':
     yaml.add_representer(Not, Not.representer)
-    yaml.add_constructor(u'!Or', Not.constructor)
+    yaml.add_constructor(u'!Not', Not.constructor)

@@ -84,7 +84,9 @@ class ConvertToMediary(TypeChecker):
                 parsed_value = self.walk_list(value)
                 kwargs = {}
                 if str(key) in self.FUNCTIONS:
-                    child_is_function = self.check_list_has_functions(parsed_value)
+                    child_is_function = False
+                    if str(key) not in self.ENCAPSULATED_FUNCTIONS:
+                        child_is_function = self.check_list_has_functions(parsed_value)
                     kwargs['use_literal'] = (use_literal | child_is_function)
                     if str(key) == 'Fn::Join':
                         key = 'Fn::Sub'
