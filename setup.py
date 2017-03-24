@@ -7,7 +7,7 @@ setup(
     version=__version__,
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     url='https://github.com/drewsonne/cfn-json-to-yaml',
-    download_url='https://github.com/drewsonne/cfn-json-to-yaml/archive/v.{0}.zip'.format(__version__),  # I'll explain this in a second
+    download_url='https://github.com/drewsonne/cfn-json-to-yaml/archive/v.{0}.zip'.format(__version__),
     license='LGPL',
     author='Drew J. Sonne',
     author_email='drew.sonne@gmail.com',
