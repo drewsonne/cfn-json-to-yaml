@@ -17,6 +17,12 @@ In addition, cfnjsontoyaml tries to make a best guess at when
 
 ### Convert Long JSON to compact YAML
 
+This utility not only converts from JSON to yaml, it will use the new
+short yaml syntax, and attempt to convert `Fn::Join` to `!Sub`,
+resulting in shorter, more compact syntax.
+
+For example, and IAM role can be converted from 
+
 ![docs/images/diagram.png](docs/images/diagram.png)
 
 ## Usage
