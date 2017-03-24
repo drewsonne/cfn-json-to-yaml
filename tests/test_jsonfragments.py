@@ -16,6 +16,7 @@ def dataprovider_fragments():
     fragment_files = pkg_resources.resource_listdir(__name__, 'resources/fragments')
     fragment_basenames = map(lambda file: splitext(basename(file))[0], fragment_files)
     fragment_parts = list(set(fragment_basenames))  # Make unique
+    fragment_parts.sort()
 
     def build_struct(name):
         return (

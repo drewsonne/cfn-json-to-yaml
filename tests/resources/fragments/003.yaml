@@ -1,7 +1,4 @@
 ---
 Conditions:
-  HasSortKey:
-    Fn::Not: !Equals
-      - !Ref SortKeyElementName
-      - ''
+  HasSortKey: !Not [!Equals [!Ref "SortKeyElementName", blah]]
   HasStreamEnabled: !Equals [!Ref "StreamEnabled", 'true']

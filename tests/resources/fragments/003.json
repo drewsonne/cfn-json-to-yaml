@@ -7,7 +7,7 @@
             {
               "Ref": "SortKeyElementName"
             },
-            ""
+            "blah"
           ]
         }
       ]

@@ -1,0 +1,54 @@
+---
+Resources:
+  ELB:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      AccessLoggingPolicy:
+        EmitInterval: 5
+        Enabled: true
+        S3BucketName: my-s3-bucket
+        S3BucketPrefix: my-logging-prefix
+      ConnectionDrainingPolicy:
+        Enabled: true
+        Timeout: 300
+      CrossZone: 'true'
+      HealthCheck:
+        HealthyThreshold: '3'
+        Interval: '30'
+        Target: HTTP:80/
+        Timeout: '5'
+        UnhealthyThreshold: '3'
+      Listeners:
+      - InstancePort: '80'
+        InstanceProtocol: HTTP
+        LoadBalancerPort: '80'
+        Protocol: HTTP
+      - InstancePort: '80'
+        InstanceProtocol: HTTP
+        LoadBalancerPort: '443'
+        Protocol: HTTPS
+        SSLCertificateId: arn:aws:iam::0123456789012:server-certificate/my-certificate
+      Policies:
+      - Attributes:
+        - Name: CookieName
+          Value: MYSESSIONID
+        PolicyName: AppCookieStickinessPolicies
+        PolicyType: AppCookieStickinessPolicyType
+      Scheme: internet-facing
+      SecurityGroups:
+      - !Ref "ELBSecurityGroup"
+      Subnets:
+      - subnet-11234567
+      - subnet-8890abcd
+      - subnet-eef12345
+      Tags:
+      - Key: Environment
+        Value: QA1
+      - Key: Site
+        Value: QA
+      - Key: Application
+        Value: my-application
+      - Key: Creator
+        Value: Drew
+      - Key: Owner
+        Value: DevOps
