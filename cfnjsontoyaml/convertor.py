@@ -13,7 +13,7 @@ class ConvertToMediary(TypeChecker):
         'AWSTemplateFormatVersion', 'Transform', 'Description', 'Metadata',
         'Parameters', 'Mappings', 'Conditions', 'Resources', 'Outputs'
     ]
-    RESOURCE_ORDER = ['Type', 'Properties', 'DependsOn']
+    RESOURCE_ORDER = ['Type', 'Properties', 'CreationPolicy', 'UpdatePolicy','Condition','DependsOn']
 
     def __init__(self, template):
         self._template = template

@@ -15,6 +15,10 @@ node type functions.
 In addition, cfnjsontoyaml tries to make a best guess at when
  `Fn::Join` functions should automatically be converted to `!Sub`.
 
+### Convert Long JSON to compact YAML
+
+![docs/images/diagram.png](docs/images/diagram.png)
+
 ## Usage
 `cfn-json-to-yaml` reads either from standard in, or takes the first
 argument as the template to ingest and prints the yaml converted
@@ -22,6 +26,85 @@ template to stdout.
 
     $ pip install cfnjsontoyaml
     $ cat my_template.json | cfn-json-to-yaml
+
+## Examples
+
+### APIGateway Method with lambda proxy
+In some cases, we can halve the number of lines, while still maintaining readability.
+Here, we convert 48 lines of JSON to 19 lines of YAML.
+#### JSON
+
+    {
+      "Resources": {
+        "MappingReferenceMethod": {
+          "Type": "AWS::ApiGateway::Method",
+          "DependsOn": [
+            "LambdaInvokePermissionMappingReference"
+          ],
+          "Properties": {
+            "RestApiId": {
+              "Ref": "RestApi"
+            },
+            "ResourceId": {
+              "Ref": "MappingReferenceResource"
+            },
+            "HttpMethod": "POST",
+            "AuthorizationType": "NONE",
+            "ApiKeyRequired": true,
+            "RequestParameters": {
+              "method.request.header.x-api-key": true
+            },
+            "Integration": {
+              "Type": "AWS_PROXY",
+              "Uri": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:apigateway:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":lambda:path/2015-03-31/functions/",
+                    {
+                      "Fn::GetAtt": [
+                        "LambdaFunctionMappingReference",
+                        "Arn"
+                      ]
+                    },
+                    "/invocations"
+                  ]
+                ]
+              },
+              "IntegrationHttpMethod": "POST",
+              "PassthroughBehavior": "when_no_templates"
+            }
+          }
+        }
+      }
+    }
+
+#### YAML
+
+    ---
+    Resources:
+      MappingReferenceMethod:
+        Type: AWS::ApiGateway::Method
+        Properties:
+          ApiKeyRequired: true
+          AuthorizationType: NONE
+          HttpMethod: POST
+          Integration:
+            IntegrationHttpMethod: POST
+            PassthroughBehavior: when_no_templates
+            Type: AWS_PROXY
+            Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunctionMappingReference.Arn}/invocations"
+          RequestParameters:
+            method.request.header.x-api-key: true
+          ResourceId: !Ref "MappingReferenceResource"
+          RestApiId: !Ref "RestApi"
+        DependsOn:
+        - LambdaInvokePermissionMappingReference
+
 
 ## Problems
 There are a wide range of combinations for functions in cloudformation.
