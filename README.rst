@@ -9,10 +9,27 @@
 cfnjsontoyaml
 =============
 
-Convert JSON CloudFormation templates to YAML.
+Convert JSON CloudFormation templates to the new YAML syntax. This
+includes converting all ``Fn::*`` and ``Ref`` JSON functions to ``!*``
+yaml node type functions.
 
-This would automatically convert ``Fn::Join`` functions to ``!Sub``, and
-do its best to take advantage of the new tags.
+In addition, cfnjsontoyaml tries to make a best guess at when
+``Fn::Join`` functions should automatically be converted to ``!Sub``.
+
+Convert Long JSON to compact YAML
+---------------------------------
+
+This utility not only converts from JSON to yaml, it will use the new
+short yaml syntax, and attempt to convert ``Fn::Join`` to ``!Sub``,
+resulting in shorter, more compact syntax.
+
+For example, and IAM role can be converted from 127 lines of JSON
+cloudformation to 30 lines of yaml.
+
+.. figure:: docs/images/diagram.png
+   :alt: docs/images/diagram.png
+
+   docs/images/diagram.png
 
 Usage
 -----
@@ -26,13 +43,106 @@ template to stdout.
     $ pip install cfnjsontoyaml
     $ cat my_template.json | cfn-json-to-yaml
 
+Examples
+--------
+
+APIGateway Method with lambda proxy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In some cases, we can halve the number of lines, while still maintaining
+readability. Here, we convert 48 lines of JSON to 19 lines of YAML. ####
+JSON
+
+::
+
+    {
+      "Resources": {
+        "MappingReferenceMethod": {
+          "Type": "AWS::ApiGateway::Method",
+          "DependsOn": [
+            "LambdaInvokePermissionMappingReference"
+          ],
+          "Properties": {
+            "RestApiId": {
+              "Ref": "RestApi"
+            },
+            "ResourceId": {
+              "Ref": "MappingReferenceResource"
+            },
+            "HttpMethod": "POST",
+            "AuthorizationType": "NONE",
+            "ApiKeyRequired": true,
+            "RequestParameters": {
+              "method.request.header.x-api-key": true
+            },
+            "Integration": {
+              "Type": "AWS_PROXY",
+              "Uri": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:apigateway:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":lambda:path/2015-03-31/functions/",
+                    {
+                      "Fn::GetAtt": [
+                        "LambdaFunctionMappingReference",
+                        "Arn"
+                      ]
+                    },
+                    "/invocations"
+                  ]
+                ]
+              },
+              "IntegrationHttpMethod": "POST",
+              "PassthroughBehavior": "when_no_templates"
+            }
+          }
+        }
+      }
+    }
+
+YAML
+^^^^
+
+::
+
+    ---
+    Resources:
+      MappingReferenceMethod:
+        Type: AWS::ApiGateway::Method
+        Properties:
+          ApiKeyRequired: true
+          AuthorizationType: NONE
+          HttpMethod: POST
+          Integration:
+            IntegrationHttpMethod: POST
+            PassthroughBehavior: when_no_templates
+            Type: AWS_PROXY
+            Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunctionMappingReference.Arn}/invocations"
+          RequestParameters:
+            method.request.header.x-api-key: true
+          ResourceId: !Ref "MappingReferenceResource"
+          RestApiId: !Ref "RestApi"
+        DependsOn:
+        - LambdaInvokePermissionMappingReference
+
 Problems
 --------
 
 There are a wide range of combinations for functions in cloudformation.
 If you come across a template which does not render correctly, please
 try and isolate the fragment of json which is causing issues, and create
-an issue.
+an `issue in
+github <https://github.com/drewsonne/cfn-json-to-yaml/issues/new>`__ .
+
+If you'd like to be a bit more helpful, you can fork the repository,
+create a branch, and add a json/yaml snippet to
+https://github.com/drewsonne/cfn-json-to-yaml/tree/master/tests/resources/fragments
+with the next sequential number. The smaller the json/yaml snippet you
+can provide the quicker I can fix it. :-)
 
 .. |PyPI version| image:: https://badge.fury.io/py/cfnjsontoyaml.svg
    :target: https://badge.fury.io/py/cfnjsontoyaml
